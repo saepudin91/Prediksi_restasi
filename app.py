@@ -8,22 +8,19 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 
-st.write("Secrets Keys:", list(st.secrets.keys()))
-
+# Cek apakah GOOGLE_SHEETS_CREDENTIALS ada
 if "GOOGLE_SHEETS_CREDENTIALS" in st.secrets:
-    st.success("GOOGLE_SHEETS_CREDENTIALS ditemukan!")
-    try:
-        credentials_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"])
-        st.write("Credentials Loaded Successfully!")
-    except json.JSONDecodeError:
-        st.error("Format JSON salah! Coba cek ulang.")
+    credentials_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"])
+    creds = service_account.Credentials.from_service_account_info(credentials_dict)
+    client = gspread.authorize(creds)
+    
+    # Akses Google Sheets
+    SPREADSHEET_NAME = "Prediksi prestasi"
+    sheet = client.open(SPREADSHEET_NAME).sheet1
+    
+    st.success("Berhasil terhubung ke Google Sheets!")
 else:
     st.error("GOOGLE_SHEETS_CREDENTIALS tidak ditemukan di Streamlit Secrets!")
-# Buat credential dari JSON
-creds = Credentials.from_service_account_info(credentials_dict)
-# Nama spreadsheet
-SPREADSHEET_NAME = "Prediksi prestasi"
-sheet = client.open(SPREADSHEET_NAME).sheet1
 
 # Header tetap
 HEADER = ["No", "Nama", "Jenis Kelamin", "Umur", "Kelas", 
