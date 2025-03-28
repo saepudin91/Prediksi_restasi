@@ -1,7 +1,10 @@
-pandas
 streamlit
+pandas
 numpy
+scikit-learn
 matplotlib
 gspread
 google-auth
-scikit-learn
+google-auth-oauthlib
+google-auth-httplib2
+google-auth-oauthlib
