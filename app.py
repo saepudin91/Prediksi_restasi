@@ -9,10 +9,16 @@ from google.oauth2.service_account import Credentials
 
 # --- KONFIGURASI GOOGLE SHEETS ---
 
-# Ambil credentials dari secrets
-json_credentials = st.secrets["GOOGLE_SHEETS_CREDENTIALS"]
-credentials_dict = json.loads(json_credentials)
+import streamlit as st
 
+# Cek apakah secrets terbaca
+st.write("Secrets Keys:", list(st.secrets.keys()))
+
+# Load credentials
+if "GOOGLE_SHEETS_CREDENTIALS" in st.secrets:
+    json_credentials = st.secrets["GOOGLE_SHEETS_CREDENTIALS"]
+else:
+    st.error("GOOGLE_SHEETS_CREDENTIALS tidak ditemukan di Streamlit Secrets!")
 # Buat credential dari JSON
 creds = Credentials.from_service_account_info(credentials_dict)
 # Nama spreadsheet
