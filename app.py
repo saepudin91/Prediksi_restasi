@@ -7,8 +7,15 @@ from io import BytesIO
 import gspread
 from google.oauth2.service_account import Credentials
 
-import streamlit as st
-import json
+if "GOOGLE_SHEETS_CREDENTIALS" in st.secrets:
+    try:
+        st.write("Isi GOOGLE_SHEETS_CREDENTIALS:")
+        st.json(json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"]))
+        st.success("JSON valid!")
+    except json.JSONDecodeError as e:
+        st.error(f"Format JSON salah: {e}")
+else:
+    st.error("GOOGLE_SHEETS_CREDENTIALS tidak ditemukan di secrets!")
 
 st.write("Secrets yang ditemukan:", list(st.secrets.keys()))
 
