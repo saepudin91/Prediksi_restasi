@@ -7,7 +7,7 @@ from io import BytesIO
 import gspread
 from google.oauth2.service_account import Credentials
 
-
+st.write("Secrets Keys:", list(st.secrets.keys()))
 # Cek apakah GOOGLE_SHEETS_CREDENTIALS ada
 if "GOOGLE_SHEETS_CREDENTIALS" in st.secrets:
     credentials_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"])
