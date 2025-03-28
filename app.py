@@ -4,80 +4,76 @@ import pickle
 import base64
 import streamlit as st
 import gspread
-from google.oauth2.service_account import Credentials
+import pandas as pd
+import matplotlib.pyplot as plt
 from google.oauth2 import service_account
 
-# Cek apakah secrets tersedia
+# --- DEBUG 1: CEK APAKAH SECRETS ADA ---
+st.write("📌 Debug: Cek apakah 'gcp_service_account' ada di secrets")
 if "gcp_service_account" not in st.secrets:
     st.error("⚠ Kredensial GCP tidak ditemukan di secrets.toml!")
-else:
-    try:
-        # Baca isi secrets
-        creds = st.secrets["gcp_service_account"]
-        st.json(creds)  # Tampilkan JSON untuk verifikasi
-    except Exception as e:
-        st.error(f"⚠ Terjadi kesalahan saat membaca secrets: {e}")
+    st.stop()
 
-st.write("📌 Debug: Isi st.secrets['gcp_service_account']")
+# --- DEBUG 2: CEK ISI SECRETS (FORMAT HARUS DICTIONARY) ---
+st.write("📌 Debug: Isi secrets['gcp_service_account']")
 st.json(st.secrets["gcp_service_account"])
 
-# --- KONFIGURASI GOOGLE SHEETS ---
-SCOPES = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-
 try:
-    import json
-    creds_str = json.dumps(st.secrets["gcp_service_account"])  # Ubah ke string JSON
-    creds_dict = json.loads(creds_str)  # Ubah kembali ke dictionary Python
+    # Pastikan format kredensial benar
+    creds_dict = json.loads(json.dumps(st.secrets["gcp_service_account"]))  # Konversi ke dict Python
     
+    # --- DEBUG 3: CEK DICTIONARY KREDENSIAL ---
     st.write("📌 Debug: Isi creds_dict setelah konversi")
     st.json(creds_dict)
 
+    SCOPES = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds = service_account.Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
+
+    # Koneksi ke Google Sheets
     client = gspread.authorize(creds)
     st.success("✅ Koneksi ke Google Sheets berhasil!")
+
 except Exception as e:
     st.error(f"⚠ Terjadi kesalahan saat memuat kredensial: {e}")
+    st.stop()
 
-SPREADSHEET_ID = "1abcDEFghIJklMnOPQRstuVWxyz"  # Ganti dengan ID Google Sheets
+# --- GOOGLE SHEET CONFIG ---
+SPREADSHEET_ID = "1abcDEFghIJklMnOPQRstuVWxyz"  # Ganti dengan ID Google Sheets yang benar
 try:
     sheet = client.open_by_key(SPREADSHEET_ID).sheet1
 except Exception as e:
     st.error(f"⚠ Tidak dapat mengakses Google Sheets: {e}")
     st.stop()
 
-# Header tetap
-HEADER = ["No", "Nama", "Jenis Kelamin", "Umur", "Kelas", 
-          "Tingkat Bullying", "Dukungan Sosial", "Kesehatan Mental", 
-          "Jenis Bullying", "Prediksi Prestasi"]
-
-if not sheet.row_values(1):  
+HEADER = ["No", "Nama", "Jenis Kelamin", "Umur", "Kelas", "Tingkat Bullying", "Dukungan Sosial", "Kesehatan Mental", "Jenis Bullying", "Prediksi Prestasi"]
+if not sheet.row_values(1):
     sheet.append_row(HEADER)
 
-# Load model regresi dari Streamlit Secrets
+# --- DEBUG 4: CEK MODEL REGRESI ---
+if "model_regresi" not in st.secrets:
+    st.error("⚠ Model regresi tidak ditemukan di secrets.toml!")
+    st.stop()
 
 st.write("📌 Debug: Model regresi dari secrets")
 st.write(st.secrets["model_regresi"][:100] + "...")  # Tampilkan sebagian model untuk verifikasi
 
 try:
-    import base64
-    import pickle
-
     model_data = base64.b64decode(st.secrets["model_regresi"])  
     model = pickle.loads(model_data)
     st.success("✅ Model regresi berhasil dimuat!")
+
 except Exception as e:
     st.error(f"⚠ Model regresi tidak dapat dimuat: {e}")
     st.stop()
 
+# --- UI STREAMLIT ---
 st.title("📊 Aplikasi Prediksi Prestasi Belajar")
-
-# --- MODE INPUT ---
 mode = st.radio("Pilih mode input:", ("Input Manual", "Upload CSV"))
 
 def get_next_available_number(sheet):
     data = sheet.get_all_values()
     if len(data) <= 1:
-        return 1  
+        return 1
     existing_numbers = set(int(row[0]) for row in data[1:] if row[0].isdigit())
     next_no = 1
     while next_no in existing_numbers:
@@ -148,23 +144,11 @@ df_riwayat = pd.DataFrame(data[1:], columns=HEADER) if len(data) > 1 else pd.Dat
 if not df_riwayat.empty:
     st.dataframe(df_riwayat)
 
-    if st.button("🗑 Hapus Semua Riwayat"):
-        sheet.clear()
-        sheet.append_row(HEADER)
-        st.warning("🚨 Seluruh riwayat prediksi telah dihapus!")
-        st.rerun()
-
 # --- ANALISIS JENIS BULLYING ---
 st.subheader("📊 Analisis Jenis Bullying")
 if not df_riwayat.empty and "Jenis Bullying" in df_riwayat.columns:
     bullying_counts = df_riwayat["Jenis Bullying"].value_counts()
-
     fig, ax = plt.subplots(figsize=(8, 6))
     bullying_counts.plot(kind="bar", ax=ax, color=['blue', 'red', 'green', 'purple', 'orange'])
     ax.set_title("Jumlah Kasus Berdasarkan Jenis Bullying")
     st.pyplot(fig)
-
-# --- DOWNLOAD RIWAYAT ---
-if not df_riwayat.empty:
-    csv = df_riwayat.to_csv(index=False).encode("utf-8")
-    st.download_button("📥 Download Riwayat Prediksi", data=csv, file_name="riwayat_prediksi.csv", mime="text/csv")
