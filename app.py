@@ -8,35 +8,35 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from google.oauth2 import service_account
 
-# --- DEBUG 1: CEK APAKAH SECRETS ADA ---
-st.write("📌 Debug: Cek apakah 'gcp_service_account' ada di secrets")
+import json
+import streamlit as st
+import gspread
+from google.oauth2 import service_account
+
+# --- DEBUG: CEK APAKAH SECRETS ADA ---
 if "gcp_service_account" not in st.secrets:
     st.error("⚠ Kredensial GCP tidak ditemukan di secrets.toml!")
     st.stop()
 
-# --- DEBUG 2: CEK ISI SECRETS (FORMAT HARUS DICTIONARY) ---
-st.write("📌 Debug: Isi secrets['gcp_service_account']")
-st.json(st.secrets["gcp_service_account"])
-
+# --- FIX: Konversi st.secrets["gcp_service_account"] ke dictionary Python ---
 try:
-    # Pastikan format kredensial benar
-    creds_dict = json.loads(json.dumps(st.secrets["gcp_service_account"]))  # Konversi ke dict Python
-    
-    # --- DEBUG 3: CEK DICTIONARY KREDENSIAL ---
-    st.write("📌 Debug: Isi creds_dict setelah konversi")
-    st.json(creds_dict)
+    creds_dict = dict(st.secrets["gcp_service_account"])  # Mengubah AttrDict menjadi dictionary Python
 
+    # --- DEBUG: CEK FORMAT JSON ---
+    st.write("📌 Debug: Isi creds_dict setelah konversi")
+    st.json(creds_dict)  # Pastikan formatnya sudah benar
+
+    # --- KONFIGURASI GOOGLE CREDENTIALS ---
     SCOPES = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds = service_account.Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
 
-    # Koneksi ke Google Sheets
+    # --- HUBUNGKAN KE GOOGLE SHEETS ---
     client = gspread.authorize(creds)
     st.success("✅ Koneksi ke Google Sheets berhasil!")
 
 except Exception as e:
     st.error(f"⚠ Terjadi kesalahan saat memuat kredensial: {e}")
     st.stop()
-
 # --- GOOGLE SHEET CONFIG ---
 SPREADSHEET_ID = "1abcDEFghIJklMnOPQRstuVWxyz"  # Ganti dengan ID Google Sheets yang benar
 try:
