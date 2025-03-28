@@ -7,12 +7,16 @@ from io import BytesIO
 import gspread
 from google.oauth2.service_account import Credentials
 
-# --- KONFIGURASI GOOGLE SHEETS ---
-credentials_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"])
 
-# Load credentials
+st.write("Secrets Keys:", list(st.secrets.keys()))
+
 if "GOOGLE_SHEETS_CREDENTIALS" in st.secrets:
-    json_credentials = st.secrets["GOOGLE_SHEETS_CREDENTIALS"]
+    st.success("GOOGLE_SHEETS_CREDENTIALS ditemukan!")
+    try:
+        credentials_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"])
+        st.write("Credentials Loaded Successfully!")
+    except json.JSONDecodeError:
+        st.error("Format JSON salah! Coba cek ulang.")
 else:
     st.error("GOOGLE_SHEETS_CREDENTIALS tidak ditemukan di Streamlit Secrets!")
 # Buat credential dari JSON
