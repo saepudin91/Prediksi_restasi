@@ -8,9 +8,24 @@ from google.oauth2.service_account import Credentials
 SCOPES = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
 try:
-    # Konversi AttrDict ke dictionary biasa
-    creds_dict = dict(st.secrets["gcp_service_account"])
+    # Pastikan kredensial ada di secrets
+    if "gcp_service_account" not in st.secrets:
+        st.error("⚠ Kredensial Google Cloud tidak ditemukan di secrets!")
+        st.stop()
     
+    # Konversi ke dictionary biasa
+    creds_dict = dict(st.secrets["gcp_service_account"])
+
+    # Debug: Pastikan semua kunci yang diperlukan ada
+    required_keys = ["type", "project_id", "private_key_id", "private_key", 
+                     "client_email", "client_id", "auth_uri", "token_uri",
+                     "auth_provider_x509_cert_url", "client_x509_cert_url"]
+    
+    missing_keys = [key for key in required_keys if key not in creds_dict]
+    if missing_keys:
+        st.error(f"⚠ Kredensial tidak lengkap! Kunci yang hilang: {missing_keys}")
+        st.stop()
+
     # Load credentials
     creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
     client = gspread.authorize(creds)
