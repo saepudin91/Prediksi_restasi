@@ -9,11 +9,12 @@ from google.oauth2.service_account import Credentials
 
 # --- KONFIGURASI GOOGLE SHEETS ---
 
-import streamlit as st
+
 
 # Cek apakah secrets terbaca
 st.write("Secrets Keys:", list(st.secrets.keys()))
 
+credentials_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"])
 # Load credentials
 if "GOOGLE_SHEETS_CREDENTIALS" in st.secrets:
     json_credentials = st.secrets["GOOGLE_SHEETS_CREDENTIALS"]
