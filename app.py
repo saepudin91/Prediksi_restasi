@@ -54,8 +54,9 @@ if "model_regresi" not in st.secrets:
     st.error("⚠ Model regresi tidak ditemukan di secrets.toml!")
     st.stop()
 
-st.write("📌 Debug: Isi Base64 dari secrets")
-st.text(st.secrets["model_regresi"]["model_base64"][:100] + "...")  # Tampilkan 100 karakter pertama
+model_base64 = st.secrets["model_regresi"]["model_base64"]
+st.write(f"📌 Panjang string Base64: {len(model_base64)}")
+st.write(f"📌 Beberapa karakter terakhir: {model_base64[-10:]}")
 try:
     model_base64 = st.secrets["model_regresi"]["model_base64"]
     model_data = base64.b64decode(model_base64)
