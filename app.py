@@ -7,11 +7,14 @@ from google.oauth2.service_account import Credentials
 # --- KONFIGURASI GOOGLE SHEETS ---
 SCOPES = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
-# Menggunakan Streamlit Secrets untuk kredensial Google Cloud
 try:
-    creds_dict = json.loads(json.dumps(st.secrets["gcp_service_account"]))  # Konversi AttrDict ke dict
+    # Konversi AttrDict ke dictionary biasa
+    creds_dict = dict(st.secrets["gcp_service_account"])
+    
+    # Load credentials
     creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
     client = gspread.authorize(creds)
+
 except Exception as e:
     st.error(f"⚠ Terjadi kesalahan saat memuat kredensial: {e}")
     st.stop()
