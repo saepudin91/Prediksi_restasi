@@ -3,6 +3,7 @@ pandas
 numpy
 scikit-learn
 matplotlib
+matplotlib.pyplot as plt
 gspread
 google-auth
 google-auth-oauthlib
