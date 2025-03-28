@@ -4,6 +4,17 @@ import streamlit as st
 import gspread
 from google.oauth2.service_account import Credentials
 
+# Cek apakah secrets tersedia
+if "gcp_service_account" not in st.secrets:
+    st.error("⚠ Kredensial GCP tidak ditemukan di secrets.toml!")
+else:
+    try:
+        # Baca isi secrets
+        creds = st.secrets["gcp_service_account"]
+        st.json(creds)  # Tampilkan JSON untuk verifikasi
+    except Exception as e:
+        st.error(f"⚠ Terjadi kesalahan saat membaca secrets: {e}")
+
 # --- KONFIGURASI GOOGLE SHEETS ---
 SCOPES = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
