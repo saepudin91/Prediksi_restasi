@@ -7,10 +7,19 @@ from io import BytesIO
 import gspread
 from google.oauth2.service_account import Credentials
 
-# Cek apakah GOOGLE_SHEETS_CREDENTIALS ada dalam secrets
-if "GOOGLE_SHEETS_CREDENTIALS" not in st.secrets:
-    st.error("GOOGLE_SHEETS_CREDENTIALS tidak ditemukan di Streamlit Secrets!")
-    st.stop()
+import streamlit as st
+import json
+
+st.write("Secrets yang ditemukan:", list(st.secrets.keys()))
+
+if "GOOGLE_SHEETS_CREDENTIALS" in st.secrets:
+    try:
+        credentials_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"])
+        st.success("GOOGLE_SHEETS_CREDENTIALS ditemukan dan berhasil di-load!")
+    except json.JSONDecodeError:
+        st.error("Format JSON di secrets.toml salah! Cek kembali formatnya.")
+else:
+    st.error("GOOGLE_SHEETS_CREDENTIALS tidak ditemukan di secrets!")
 
 # Load kredensial dari secrets
 credentials_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"])
