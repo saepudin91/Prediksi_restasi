@@ -56,7 +56,9 @@ if "model_regresi" not in st.secrets:
 
 try:
     model_base64 = st.secrets["model_regresi"]["model_base64"]
-    model_data = base64.b64decode(model_base64)  
+    model_data = base64.b64decode(model_base64)
+   st.write("📌 Debug: Isi Base64 dari secrets")
+st.text(st.secrets["model_regresi"]["model_base64"][:100] + "...")  # Tampilkan 100 karakter pertama
     model = pickle.loads(model_data)
     st.success("✅ Model regresi berhasil dimuat!")
 except Exception as e:
