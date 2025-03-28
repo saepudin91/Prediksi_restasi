@@ -8,12 +8,13 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 # --- KONFIGURASI GOOGLE SHEETS ---
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-# Ambil secret dari Streamlit
-service_account_info = st.secrets["GOOGLE_APPLICATION_CREDENTIALS"]
-creds = Credentials.from_service_account_info(json.loads(service_account_info))
-client = gspread.authorize(creds)
 
+# Ambil credentials dari secrets
+json_credentials = st.secrets["GOOGLE_SHEETS_CREDENTIALS"]
+credentials_dict = json.loads(json_credentials)
+
+# Buat credential dari JSON
+creds = Credentials.from_service_account_info(credentials_dict)
 # Nama spreadsheet
 SPREADSHEET_NAME = "Prediksi prestasi"
 sheet = client.open(SPREADSHEET_NAME).sheet1
