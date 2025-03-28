@@ -1,30 +1,22 @@
-import os
 import json
 import pandas as pd
 import pickle
 import streamlit as st
 import matplotlib.pyplot as plt
-from io import BytesIO
 import gspread
 from google.oauth2.service_account import Credentials
 
 # --- KONFIGURASI GOOGLE SHEETS ---
 SCOPES = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-JSON_PATH = "D:/prediksi/prediksiprestasi-109c874757d5.json"  # Sesuaikan dengan lokasi file JSON
-
-# Pastikan file kredensial ada sebelum digunakan
-if not os.path.exists(JSON_PATH):
-    st.error(f"⚠ File kredensial tidak ditemukan: {JSON_PATH}")
-    st.stop()
 
 try:
-    creds = Credentials.from_service_account_file(JSON_PATH, scopes=SCOPES)
+    creds_json = st.secrets["gcp_service_account"]  # Ambil kredensial dari Streamlit Secrets
+    creds = Credentials.from_service_account_info(json.loads(creds_json), scopes=SCOPES)
     client = gspread.authorize(creds)
 except Exception as e:
     st.error(f"⚠ Terjadi kesalahan saat memuat kredensial: {e}")
     st.stop()
 
-# Nama Spreadsheet atau gunakan ID jika ada kendala
 SPREADSHEET_ID = "1abcDEFghIJklMnOPQRstuVWxyz"  # Ganti dengan ID Google Sheets
 try:
     sheet = client.open_by_key(SPREADSHEET_ID).sheet1
@@ -37,23 +29,30 @@ HEADER = ["No", "Nama", "Jenis Kelamin", "Umur", "Kelas",
           "Tingkat Bullying", "Dukungan Sosial", "Kesehatan Mental", 
           "Jenis Bullying", "Prediksi Prestasi"]
 
-# Pastikan header ada
 if not sheet.row_values(1):  
     sheet.append_row(HEADER)
 
-# Load model regresi
-MODEL_PATH = "D:/prediksi/model_regresi.pkl"
-if not os.path.exists(MODEL_PATH):
-    st.error(f"⚠ Model regresi tidak ditemukan: {MODEL_PATH}")
+# Load model regresi dari Streamlit Secrets
+try:
+    model = pickle.loads(bytes.fromhex(st.secrets["model_regresi"]))
+except Exception as e:
+    st.error(f"⚠ Model regresi tidak dapat dimuat: {e}")
     st.stop()
-
-with open(MODEL_PATH, "rb") as f:
-    model = pickle.load(f)
 
 st.title("📊 Aplikasi Prediksi Prestasi Belajar")
 
 # --- MODE INPUT ---
 mode = st.radio("Pilih mode input:", ("Input Manual", "Upload CSV"))
+
+def get_next_available_number(sheet):
+    data = sheet.get_all_values()
+    if len(data) <= 1:
+        return 1  
+    existing_numbers = set(int(row[0]) for row in data[1:] if row[0].isdigit())
+    next_no = 1
+    while next_no in existing_numbers:
+        next_no += 1
+    return next_no
 
 if mode == "Input Manual":
     nama = st.text_input("Nama Siswa").strip()
@@ -65,16 +64,6 @@ if mode == "Input Manual":
     bullying = st.slider("Tingkat Bullying", 1, 10, 5)
     sosial = st.slider("Dukungan Sosial", 1, 10, 5)
     mental = st.slider("Kesehatan Mental", 1, 10, 5)
-
-    def get_next_available_number(sheet):
-        data = sheet.get_all_values()
-        if len(data) <= 1:
-            return 1  
-        existing_numbers = set(int(row[0]) for row in data[1:] if row[0].isdigit())
-        next_no = 1
-        while next_no in existing_numbers:
-            next_no += 1
-        return next_no
 
     if st.button("🔍 Prediksi!"):
         if not nama:
