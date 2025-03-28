@@ -18,23 +18,39 @@ else:
     except Exception as e:
         st.error(f"⚠ Terjadi kesalahan saat membaca secrets: {e}")
 
-
+st.write("📌 Debug: Isi st.secrets['gcp_service_account']")
+st.json(st.secrets["gcp_service_account"])
 
 # --- KONFIGURASI GOOGLE SHEETS ---
 SCOPES = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
 try:
-    # Konversi ke dictionary biasa
-    creds_dict = json.loads(json.dumps(st.secrets["gcp_service_account"]))
+    import json
+    creds_str = json.dumps(st.secrets["gcp_service_account"])  # Ubah ke string JSON
+    creds_dict = json.loads(creds_str)  # Ubah kembali ke dictionary Python
+    
+    st.write("📌 Debug: Isi creds_dict setelah konversi")
+    st.json(creds_dict)
 
-    # Buat credentials dari dictionary
     creds = service_account.Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
-
-    # Hubungkan dengan Google Sheets
     client = gspread.authorize(creds)
     st.success("✅ Koneksi ke Google Sheets berhasil!")
 except Exception as e:
     st.error(f"⚠ Terjadi kesalahan saat memuat kredensial: {e}")
+
+st.write("📌 Debug: Model regresi dari secrets")
+st.write(st.secrets["model_regresi"][:100] + "...")  # Tampilkan sebagian model untuk verifikasi
+
+try:
+    import base64
+    import pickle
+
+    model_data = base64.b64decode(st.secrets["model_regresi"])  
+    model = pickle.loads(model_data)
+    st.success("✅ Model regresi berhasil dimuat!")
+except Exception as e:
+    st.error(f"⚠ Model regresi tidak dapat dimuat: {e}")
+    st.stop()
 
 SPREADSHEET_ID = "1abcDEFghIJklMnOPQRstuVWxyz"  # Ganti dengan ID Google Sheets
 try:
