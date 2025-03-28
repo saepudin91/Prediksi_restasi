@@ -1,17 +1,16 @@
+import os
 import json
-import pandas as pd
-import pickle
 import streamlit as st
-import matplotlib.pyplot as plt
 import gspread
 from google.oauth2.service_account import Credentials
 
 # --- KONFIGURASI GOOGLE SHEETS ---
 SCOPES = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
+# Menggunakan Streamlit Secrets untuk kredensial Google Cloud
 try:
-    creds_json = st.secrets["gcp_service_account"]  # Ambil kredensial dari Streamlit Secrets
-    creds = Credentials.from_service_account_info(json.loads(creds_json), scopes=SCOPES)
+    creds_dict = json.loads(json.dumps(st.secrets["gcp_service_account"]))  # Konversi AttrDict ke dict
+    creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
     client = gspread.authorize(creds)
 except Exception as e:
     st.error(f"⚠ Terjadi kesalahan saat memuat kredensial: {e}")
