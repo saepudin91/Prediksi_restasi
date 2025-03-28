@@ -26,6 +26,15 @@ try:
     st.write("📌 Debug: Isi creds_dict setelah konversi")
     st.json(creds_dict)  # Pastikan formatnya sudah benar
 
+    # Cek apakah JSON valid sebelum digunakan
+try:
+    creds_dict = dict(st.secrets["gcp_service_account"])
+    st.json(creds_dict)  # Debugging: Cek isi JSON
+
+except Exception as e:
+    st.error(f"⚠ Error membaca JSON: {e}")
+    st.stop()
+
     # --- KONFIGURASI GOOGLE CREDENTIALS ---
     SCOPES = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds = service_account.Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
