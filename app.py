@@ -1,8 +1,11 @@
 import os
 import json
+import pickle
+import base64
 import streamlit as st
 import gspread
 from google.oauth2.service_account import Credentials
+from google.oauth2 import service_account
 
 # Cek apakah secrets tersedia
 if "gcp_service_account" not in st.secrets:
@@ -15,16 +18,14 @@ else:
     except Exception as e:
         st.error(f"⚠ Terjadi kesalahan saat membaca secrets: {e}")
 
-import streamlit as st
-import gspread
-from google.oauth2 import service_account
+
 
 # --- KONFIGURASI GOOGLE SHEETS ---
 SCOPES = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
 try:
     # Konversi ke dictionary biasa
-    creds_dict = dict(st.secrets["gcp_service_account"])
+    creds_dict = json.loads(json.dumps(st.secrets["gcp_service_account"]))
 
     # Buat credentials dari dictionary
     creds = service_account.Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
@@ -51,8 +52,12 @@ if not sheet.row_values(1):
     sheet.append_row(HEADER)
 
 # Load model regresi dari Streamlit Secrets
+
 try:
-    model = pickle.loads(bytes.fromhex(st.secrets["model_regresi"]))
+    # Decode model dari base64 (pastikan model disimpan dalam format base64 di secrets)
+    model_data = base64.b64decode(st.secrets["model_regresi"])
+    model = pickle.loads(model_data)
+    st.success("✅ Model regresi berhasil dimuat!")
 except Exception as e:
     st.error(f"⚠ Model regresi tidak dapat dimuat: {e}")
     st.stop()
