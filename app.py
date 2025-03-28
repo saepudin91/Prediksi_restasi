@@ -23,15 +23,11 @@ from google.oauth2 import service_account
 SCOPES = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
 try:
-    # Ambil kredensial dari Streamlit secrets
-    creds_dict = st.secrets["gcp_service_account"]
+    # Konversi ke dictionary biasa
+    creds_dict = dict(st.secrets["gcp_service_account"])
 
-    # Ubah dictionary ke JSON string & parsing kembali agar sesuai dengan format yang diterima Credentials
-    import json
-    creds_json = json.dumps(creds_dict)
-
-    # Buat credentials dari JSON
-    creds = service_account.Credentials.from_service_account_info(json.loads(creds_json), scopes=SCOPES)
+    # Buat credentials dari dictionary
+    creds = service_account.Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
 
     # Hubungkan dengan Google Sheets
     client = gspread.authorize(creds)
