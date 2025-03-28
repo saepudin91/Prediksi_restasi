@@ -38,20 +38,6 @@ try:
 except Exception as e:
     st.error(f"⚠ Terjadi kesalahan saat memuat kredensial: {e}")
 
-st.write("📌 Debug: Model regresi dari secrets")
-st.write(st.secrets["model_regresi"][:100] + "...")  # Tampilkan sebagian model untuk verifikasi
-
-try:
-    import base64
-    import pickle
-
-    model_data = base64.b64decode(st.secrets["model_regresi"])  
-    model = pickle.loads(model_data)
-    st.success("✅ Model regresi berhasil dimuat!")
-except Exception as e:
-    st.error(f"⚠ Model regresi tidak dapat dimuat: {e}")
-    st.stop()
-
 SPREADSHEET_ID = "1abcDEFghIJklMnOPQRstuVWxyz"  # Ganti dengan ID Google Sheets
 try:
     sheet = client.open_by_key(SPREADSHEET_ID).sheet1
@@ -69,9 +55,14 @@ if not sheet.row_values(1):
 
 # Load model regresi dari Streamlit Secrets
 
+st.write("📌 Debug: Model regresi dari secrets")
+st.write(st.secrets["model_regresi"][:100] + "...")  # Tampilkan sebagian model untuk verifikasi
+
 try:
-    # Decode model dari base64 (pastikan model disimpan dalam format base64 di secrets)
-    model_data = base64.b64decode(st.secrets["model_regresi"])
+    import base64
+    import pickle
+
+    model_data = base64.b64decode(st.secrets["model_regresi"])  
     model = pickle.loads(model_data)
     st.success("✅ Model regresi berhasil dimuat!")
 except Exception as e:
