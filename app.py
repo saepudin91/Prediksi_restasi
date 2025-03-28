@@ -8,16 +8,21 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from google.oauth2 import service_account
 
-import json
-import streamlit as st
-import gspread
-from google.oauth2 import service_account
 
 # --- DEBUG: CEK APAKAH SECRETS ADA ---
 if "gcp_service_account" not in st.secrets:
     st.error("⚠ Kredensial GCP tidak ditemukan di secrets.toml!")
     st.stop()
 
+import streamlit as st
+import json
+
+if "gcp_service_account" in st.secrets:
+    creds = st.secrets["gcp_service_account"]
+    st.write("📌 Debug: Private Key ada?" , "private_key" in creds)
+    st.text_area("Private Key", creds.get("private_key", "TIDAK TERBACA"))
+else:
+    st.error("⚠ Secrets tidak ditemukan!")
 # --- FIX: Konversi st.secrets["gcp_service_account"] ke dictionary Python ---
 try:
     creds_dict = dict(st.secrets["gcp_service_account"])  # Mengubah AttrDict menjadi dictionary Python
