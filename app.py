@@ -62,7 +62,8 @@ try:
 except Exception as e:
     st.error(f"⚠ Model regresi tidak dapat dimuat: {e}")
     st.stop()
-
+model_data = base64.b64decode(st.secrets["model_regresi"]["model_base64"])
+model = pickle.loads(model_data)
 # --- UI STREAMLIT ---
 st.title("📊 Aplikasi Prediksi Prestasi Belajar")
 mode = st.radio("Pilih mode input:", ("Input Manual", "Upload CSV"))
