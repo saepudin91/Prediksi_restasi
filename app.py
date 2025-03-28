@@ -8,6 +8,8 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 # --- KONFIGURASI GOOGLE SHEETS ---
+credentials_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"])
+
 # Load credentials
 if "GOOGLE_SHEETS_CREDENTIALS" in st.secrets:
     json_credentials = st.secrets["GOOGLE_SHEETS_CREDENTIALS"]
