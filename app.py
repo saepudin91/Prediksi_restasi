@@ -8,37 +8,22 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from google.oauth2 import service_account
 
-
 # --- DEBUG: CEK APAKAH SECRETS ADA ---
 if "gcp_service_account" not in st.secrets:
     st.error("⚠ Kredensial GCP tidak ditemukan di secrets.toml!")
     st.stop()
 
-import streamlit as st
-import json
-
-if "gcp_service_account" in st.secrets:
-    creds = st.secrets["gcp_service_account"]
-    st.write("📌 Debug: Private Key ada?" , "private_key" in creds)
-    st.text_area("Private Key", creds.get("private_key", "TIDAK TERBACA"))
-else:
-    st.error("⚠ Secrets tidak ditemukan!")
-# --- FIX: Konversi st.secrets["gcp_service_account"] ke dictionary Python ---
 try:
-    creds_dict = dict(st.secrets["gcp_service_account"])  # Mengubah AttrDict menjadi dictionary Python
+    # Konversi secrets ke dictionary
+    creds_dict = dict(st.secrets["gcp_service_account"])
 
     # --- DEBUG: CEK FORMAT JSON ---
     st.write("📌 Debug: Isi creds_dict setelah konversi")
     st.json(creds_dict)  # Pastikan formatnya sudah benar
 
-    # Cek apakah JSON valid sebelum digunakan
-try:
-    creds_dict = dict(st.secrets["gcp_service_account"])
-    st.json(creds_dict)  # Debugging: Cek isi JSON
-
-except Exception as e:
-    st.error(f"⚠ Error membaca JSON: {e}")
-    st.stop()
+    # Perbaiki private key
+    if "private_key" in creds_dict:
+        creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
 
     # --- KONFIGURASI GOOGLE CREDENTIALS ---
     SCOPES = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
@@ -51,6 +36,7 @@ except Exception as e:
 except Exception as e:
     st.error(f"⚠ Terjadi kesalahan saat memuat kredensial: {e}")
     st.stop()
+
 # --- GOOGLE SHEET CONFIG ---
 SPREADSHEET_ID = "1abcDEFghIJklMnOPQRstuVWxyz"  # Ganti dengan ID Google Sheets yang benar
 try:
@@ -67,9 +53,6 @@ if not sheet.row_values(1):
 if "model_regresi" not in st.secrets:
     st.error("⚠ Model regresi tidak ditemukan di secrets.toml!")
     st.stop()
-
-st.write("📌 Debug: Model regresi dari secrets")
-st.write(st.secrets["model_regresi"][:100] + "...")  # Tampilkan sebagian model untuk verifikasi
 
 try:
     model_data = base64.b64decode(st.secrets["model_regresi"])  
