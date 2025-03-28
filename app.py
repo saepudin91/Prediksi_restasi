@@ -49,21 +49,19 @@ HEADER = ["No", "Nama", "Jenis Kelamin", "Umur", "Kelas", "Tingkat Bullying", "D
 if not sheet.row_values(1):
     sheet.append_row(HEADER)
 
-# --- DEBUG 4: CEK MODEL REGRESI ---
+# --- DEBUG: CEK MODEL REGRESI ---
 if "model_regresi" not in st.secrets:
     st.error("⚠ Model regresi tidak ditemukan di secrets.toml!")
     st.stop()
 
 try:
-    model_data = base64.b64decode(st.secrets["model_regresi"])  
+    model_base64 = st.secrets["model_regresi"]["model_base64"]
+    model_data = base64.b64decode(model_base64)  
     model = pickle.loads(model_data)
     st.success("✅ Model regresi berhasil dimuat!")
-
 except Exception as e:
     st.error(f"⚠ Model regresi tidak dapat dimuat: {e}")
     st.stop()
-model_data = base64.b64decode(st.secrets["model_regresi"]["model_base64"])
-model = pickle.loads(model_data)
 # --- UI STREAMLIT ---
 st.title("📊 Aplikasi Prediksi Prestasi Belajar")
 mode = st.radio("Pilih mode input:", ("Input Manual", "Upload CSV"))
