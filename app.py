@@ -53,17 +53,18 @@ if not sheet.row_values(1):
 if "model_regresi" not in st.secrets:
     st.error("⚠ Model regresi tidak ditemukan di secrets.toml!")
     st.stop()
+
 st.write("📌 Debug: Isi Base64 dari secrets")
 st.text(st.secrets["model_regresi"]["model_base64"][:100] + "...")  # Tampilkan 100 karakter pertama
 try:
     model_base64 = st.secrets["model_regresi"]["model_base64"]
     model_data = base64.b64decode(model_base64)
-   
     model = pickle.loads(model_data)
     st.success("✅ Model regresi berhasil dimuat!")
 except Exception as e:
     st.error(f"⚠ Model regresi tidak dapat dimuat: {e}")
     st.stop()
+
 # --- UI STREAMLIT ---
 st.title("📊 Aplikasi Prediksi Prestasi Belajar")
 mode = st.radio("Pilih mode input:", ("Input Manual", "Upload CSV"))
@@ -111,14 +112,18 @@ elif mode == "Upload CSV":
     if uploaded_file is not None:
         df_siswa = pd.read_csv(uploaded_file)
 
-        if not {"Tingkat Bullying", "Dukungan Sosial", "Kesehatan Mental", "Jenis Kelamin"}.issubset(df_siswa.columns):
-            st.error("⚠ Format CSV tidak sesuai!")
+        # Pastikan kolom yang diperlukan ada dalam DataFrame
+        required_columns = ["Nama", "Jenis Kelamin", "Umur", "Kelas", "Tingkat Bullying", "Dukungan Sosial", "Kesehatan Mental", "Jenis Bullying"]
+        if not set(required_columns).issubset(df_siswa.columns):
+            st.error("⚠ Format CSV tidak sesuai! Pastikan semua kolom yang diperlukan ada.")
         else:
+            # Normalisasi kolom
             df_siswa["Jenis Kelamin"] = df_siswa["Jenis Kelamin"].str.strip().str.lower().map({
                 "l": "Laki-laki", "p": "Perempuan", "laki-laki": "Laki-laki", "perempuan": "Perempuan"
             })
             df_siswa["Jenis Bullying"] = df_siswa["Jenis Bullying"].str.strip().str.capitalize()
 
+            # Buat data untuk prediksi
             X = df_siswa[["Tingkat Bullying", "Dukungan Sosial", "Kesehatan Mental"]]
             df_siswa["Prediksi Prestasi"] = model.predict(X)
 
