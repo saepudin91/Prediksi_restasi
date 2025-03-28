@@ -7,13 +7,15 @@ from io import BytesIO
 import gspread
 from google.oauth2.service_account import Credentials
 
+
 if "GOOGLE_SHEETS_CREDENTIALS" in st.secrets:
     try:
-        st.write("Isi GOOGLE_SHEETS_CREDENTIALS:")
-        st.json(json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"]))
-        st.success("JSON valid!")
-    except json.JSONDecodeError as e:
-        st.error(f"Format JSON salah: {e}")
+        # Load kredensial dengan cara yang benar
+        credentials_dict = json.loads(st.secrets["GOOGLE_SHEETS_CREDENTIALS"])
+        creds = service_account.Credentials.from_service_account_info(credentials_dict)
+        st.success("Kredensial berhasil dimuat!")
+    except Exception as e:
+        st.error(f"Terjadi kesalahan saat memuat kredensial: {e}")
 else:
     st.error("GOOGLE_SHEETS_CREDENTIALS tidak ditemukan di secrets!")
 
