@@ -8,6 +8,8 @@ import gspread
 from google.oauth2.service_account import Credentials
 from pathlib import Path
 
+st.write("Secrets yang ditemukan:", list(st.secrets.keys()))
+
 # Load kredensial dari secrets dengan format yang benar
 if "GOOGLE_SHEETS_CREDENTIALS" in st.secrets:
     try:
